@@ -1,0 +1,11 @@
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+<div class="container">
+    <h2>Welcome to Exposed !</h2>
+    <form  (submit) = "onSubmit($event)"  >
+        <label for="name">guest name</label>
+        <input type="text"  [formField] ="loginForm.name" class="name">
+        <button type="submit" class="btn1" [disabled] = "loginForm().invalid()" >enter as a guest</button>
+
+    </form>
+</div>
+

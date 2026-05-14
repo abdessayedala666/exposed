@@ -1,0 +1,35 @@
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+<div class="lobby-container">
+  <div class="lobby-card">
+    <div class="lobby-header">
+      <h1>Game Lobby</h1>
+      <p>Create a new room or join one with a room code.</p>
+    </div>
+
+    <div class="lobby-section">
+      <h2>Create a Room</h2>
+      <p class="section-text">Start a new room and invite others to join.</p>
+      <button class="primary-btn" (click)="createRoom()">Create Room</button>
+    </div>
+
+    <div class="divider">
+      <span>OR</span>
+    </div>
+
+    <div class="lobby-section">
+      <h2>Join a Room</h2>
+      <p class="section-text">Enter the 6-character room code.</p>
+
+      <input
+        type="text"
+        maxlength="6"
+        placeholder="Enter room code"
+        class="room-input"
+        [(ngModel)]="roomId"
+      />
+
+      <button class="secondary-btn" (click)="joinRoom()">Join Room</button>
+      <h4 class="errorMessage" > {{errorMessage()}}</h4>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,222 @@
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+<div class="room-layout">
+<section class="game-board">
+  <div
+    class="seat-box team1 player1"
+    [class.current-player]="seats()[0] === currentPlayerName()"
+    (dragover)="onDragOver($event)"
+    (drop)="dropToPlayer($event, 0, seats()[0])"
+  >
+    <button
+      [ngClass]="'leavePlace1'"
+      [disabled]="(disabledButtons()[0] && seats()[0] !== name ) || gameState() !== 'DIDNT_START' "
+      (click)="togglePlace(0)"
+      (dragover)="onDragOver($event)"
+      (drop)="dropToPlayer($event, 0, seats()[0])"
+    >
+      {{ seats()[0] }} 
+    </button>
+    <div class="cards" *ngIf="seats()[0]">
+      @if (seats()[0] === name) {
+        @for (card of myCards(); track $index) {
+          <div class="card" [style.color]="getSuitColor(card.suit)"
+            [attr.draggable]="canCurrentPlayerThrow() ? 'true' : 'false'"
+            [class.card-disabled]="!canCurrentPlayerThrow()"
+            [class.card-dragging]="draggedCardIndex() === $index"
+            [class.card-slot-empty]="draggedCardIndex() === $index"
+            (dragstart)="onCardDragStart($event, card, $index)"
+            (dragend)="onCardDragEnd()">
+            <span [class.card-content-hidden]="draggedCardIndex() === $index">
+              {{ card.number }}{{ getSuitSymbol(card.suit) }}
+            </span>
+          </div>
+        }
+      } @else {
+        @for (_ of createCardBackArray(getCardsCountForSeat(0)); track $index) {
+          <div class="card back">🂠</div>
+        }
+      }
+    </div>
+    <div class="captured-strip">
+      <span>Captured:</span>
+      @if (getCapturedCardsForSeat(0).length > 0) {
+        @for (card of getCapturedCardsForSeat(0); track $index) {
+          <span [style.color]="getSuitColor(card.suit)">{{ card.number }}{{ getSuitSymbol(card.suit) }}</span>
+        }
+      } @else {
+        <span>-</span>
+      }
+    </div>
+  </div>
+
+  <div
+    class="seat-box team2 player2"
+    [class.current-player]="seats()[1] === currentPlayerName()"
+    (dragover)="onDragOver($event)"
+    (drop)="dropToPlayer($event, 1, seats()[1])"
+  >
+    <button
+      [ngClass]="'leavePlace2'"
+      [disabled]="(disabledButtons()[1] && seats()[1] !== name ) || gameState() !== 'DIDNT_START' "
+      (click)="togglePlace(1)"
+      (dragover)="onDragOver($event)"
+      (drop)="dropToPlayer($event, 1, seats()[1])"
+    >
+      {{ seats()[1] }}
+    </button>
+    <div class="cards" *ngIf="seats()[1]">
+      @if (seats()[1] === name) {
+        @for (card of myCards(); track $index) {
+          <div class="card" [style.color]="getSuitColor(card.suit)"
+            [attr.draggable]="canCurrentPlayerThrow() ? 'true' : 'false'"
+            [class.card-disabled]="!canCurrentPlayerThrow()"
+            [class.card-dragging]="draggedCardIndex() === $index"
+            [class.card-slot-empty]="draggedCardIndex() === $index"
+            (dragstart)="onCardDragStart($event, card, $index)"
+            (dragend)="onCardDragEnd()">
+            <span [class.card-content-hidden]="draggedCardIndex() === $index">
+              {{ card.number }}{{ getSuitSymbol(card.suit) }}
+            </span>
+          </div>
+        }
+      } @else {
+        @for (_ of createCardBackArray(getCardsCountForSeat(1)); track $index) {
+          <div class="card back">🂠</div>
+        }
+      }
+    </div>
+    <div class="captured-strip">
+      <span>Captured:</span>
+      @if (getCapturedCardsForSeat(1).length > 0) {
+        @for (card of getCapturedCardsForSeat(1); track $index) {
+          <span [style.color]="getSuitColor(card.suit)">{{ card.number }}{{ getSuitSymbol(card.suit) }}</span>
+        }
+      } @else {
+        <span>-</span>
+      }
+    </div>
+  </div>
+
+  <div class="table-center">
+    <aside class="table-meta">
+      <div><strong>Room:</strong> {{ roomId }}</div>
+      <div><strong>Round:</strong> {{ roundNumber() ?? 'N/A' }} ({{ roundState() ?? 'N/A' }})</div>
+      <div><strong>Set:</strong> {{ setNumber() ?? 'N/A' }} ({{ setState() ?? 'N/A' }})</div>
+      <div><strong>Game:</strong> {{ gameState() ?? 'N/A' }}</div>
+      <div><strong>Winner:</strong> {{ winnerTeam() ?? 'N/A' }}</div>
+      <div><strong>Team 1:</strong> {{ getTeamNames('team1') }} | <strong>Score:</strong> {{ getTeamScore('team1') }}</div>
+      <div><strong>Team 2:</strong> {{ getTeamNames('team2') }} | <strong>Score:</strong> {{ getTeamScore('team2') }}</div>
+      @if (moveError()) {
+        <div class="move-error">{{ moveError() }}</div>
+      }
+      <button class="launch-btn" [disabled]="name !== roomOwner() || gameState() !== 'DIDNT_START'" (click)="launchGame()">Launch</button>
+    </aside>
+    <div class="center-pile" (dragover)="onDragOver($event)" (drop)="dropToCenter($event)">
+      @if (topCardInpile()) {
+        <span [style.color]="getSuitColor(topCardInpile()!.suit)">
+          {{ topCardInpile()!.number }}{{ getSuitSymbol(topCardInpile()!.suit) }}
+        </span>
+      } @else {
+        <span>Table Pile</span>
+      }
+    </div>
+  </div>
+
+  <div
+    class="seat-box team1 player3"
+    [class.current-player]="seats()[2] === currentPlayerName()"
+    (dragover)="onDragOver($event)"
+    (drop)="dropToPlayer($event, 2, seats()[2])"
+  >
+    <button
+      [ngClass]="'leavePlace3'"
+      [disabled]="(disabledButtons()[2] && seats()[2] !== name ) || gameState() !== 'DIDNT_START' "
+      (click)="togglePlace(2)"
+      (dragover)="onDragOver($event)"
+      (drop)="dropToPlayer($event, 2, seats()[2])"
+    >
+      {{ seats()[2] }}
+    </button>
+    <div class="cards" *ngIf="seats()[2]">
+      @if (seats()[2] === name) {
+        @for (card of myCards(); track $index) {
+          <div class="card" [style.color]="getSuitColor(card.suit)"
+            [attr.draggable]="canCurrentPlayerThrow() ? 'true' : 'false'"
+            [class.card-disabled]="!canCurrentPlayerThrow()"
+            [class.card-dragging]="draggedCardIndex() === $index"
+            [class.card-slot-empty]="draggedCardIndex() === $index"
+            (dragstart)="onCardDragStart($event, card, $index)"
+            (dragend)="onCardDragEnd()">
+            <span [class.card-content-hidden]="draggedCardIndex() === $index">
+              {{ card.number }}{{ getSuitSymbol(card.suit) }}
+            </span>
+          </div>
+        }
+      } @else {
+        @for (_ of createCardBackArray(getCardsCountForSeat(2)); track $index) {
+          <div class="card back">🂠</div>
+        }
+      }
+    </div>
+    <div class="captured-strip">
+      <span>Captured:</span>
+      @if (getCapturedCardsForSeat(2).length > 0) {
+        @for (card of getCapturedCardsForSeat(2); track $index) {
+          <span [style.color]="getSuitColor(card.suit)">{{ card.number }}{{ getSuitSymbol(card.suit) }}</span>
+        }
+      } @else {
+        <span>-</span>
+      }
+    </div>
+  </div>
+
+  <div
+    class="seat-box team2 player4"
+    [class.current-player]="seats()[3] === currentPlayerName()"
+    (dragover)="onDragOver($event)"
+    (drop)="dropToPlayer($event, 3, seats()[3])"
+  >
+    <button
+      [ngClass]="'leavePlace4'"
+      [disabled]="(disabledButtons()[3] && seats()[3] !== name ) || gameState() !== 'DIDNT_START' "
+      (click)="togglePlace(3)"
+      (dragover)="onDragOver($event)"
+      (drop)="dropToPlayer($event, 3, seats()[3])"
+    >
+      {{ seats()[3] }}
+    </button>
+    <div class="cards" *ngIf="seats()[3]">
+      @if (seats()[3] === name) {
+        @for (card of myCards(); track $index) {
+          <div class="card" [style.color]="getSuitColor(card.suit)"
+            [attr.draggable]="canCurrentPlayerThrow() ? 'true' : 'false'"
+            [class.card-disabled]="!canCurrentPlayerThrow()"
+            [class.card-dragging]="draggedCardIndex() === $index"
+            [class.card-slot-empty]="draggedCardIndex() === $index"
+            (dragstart)="onCardDragStart($event, card, $index)"
+            (dragend)="onCardDragEnd()">
+            <span [class.card-content-hidden]="draggedCardIndex() === $index">
+              {{ card.number }}{{ getSuitSymbol(card.suit) }}
+            </span>
+          </div>
+        }
+      } @else {
+        @for (_ of createCardBackArray(getCardsCountForSeat(3)); track $index) {
+          <div class="card back">🂠</div>
+        }
+      }
+    </div>
+    <div class="captured-strip">
+      <span>Captured:</span>
+      @if (getCapturedCardsForSeat(3).length > 0) {
+        @for (card of getCapturedCardsForSeat(3); track $index) {
+          <span [style.color]="getSuitColor(card.suit)">{{ card.number }}{{ getSuitSymbol(card.suit) }}</span>
+        }
+      } @else {
+        <span>-</span>
+      }
+    </div>
+  </div>
+</section>
+</div>
+  

@@ -1,0 +1,13 @@
+# Node
+node_modules/
+
+# Frontend build output
+/frontend/dist/
+/frontend/.angular/
+/frontend/.cache/
+/frontend/node_modules/
+
+# Editor/temp
+.vscode/
+.idea/
+*.log

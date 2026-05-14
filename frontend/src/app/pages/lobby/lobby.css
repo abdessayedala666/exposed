@@ -1,0 +1,161 @@
+:host {
+  display: block;
+  min-height: 100vh;
+  background: linear-gradient(180deg, #5c8b5c 0%, #3f6b3f 100%);
+  font-family: 'Press Start 2P', monospace;
+}
+
+.lobby-container {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+.lobby-card {
+  width: 100%;
+  max-width: 500px;
+  background: #d8c88f;
+  border: 4px solid #3f2f1c;
+  box-shadow: inset 0 0 0 4px #efe2b8;
+  padding: 32px 28px;
+  color: #2f2416;
+}
+
+.lobby-header {
+  text-align: center;
+  margin-bottom: 28px;
+}
+
+.lobby-header h1 {
+  margin: 0 0 14px;
+  font-size: 1.4rem;
+  line-height: 1.5;
+}
+
+.lobby-header p {
+  margin: 0;
+  font-size: 0.7rem;
+  line-height: 1.8;
+  color: #5a4a32;
+}
+
+.lobby-section {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.lobby-section h2 {
+  margin: 0;
+  font-size: 0.85rem;
+  line-height: 1.6;
+}
+
+.section-text {
+  margin: 0 0 4px;
+  font-size: 0.65rem;
+  line-height: 1.8;
+  color: #6a5a3d;
+}
+
+.divider {
+  display: flex;
+  align-items: center;
+  text-align: center;
+  margin: 26px 0;
+  color: #6a5a3d;
+  font-size: 0.65rem;
+}
+
+.divider::before,
+.divider::after {
+  content: "";
+  flex: 1;
+  border-bottom: 3px solid #8a774f;
+}
+
+.divider span {
+  padding: 0 12px;
+}
+
+.room-input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 14px 12px;
+  border: 3px solid #3f2f1c;
+  background: #f3e7bc;
+  color: #2f2416;
+  font-family: 'Press Start 2P', monospace;
+  font-size: 0.7rem;
+  outline: none;
+}
+
+.room-input::placeholder {
+  color: #8c7b5e;
+}
+
+.room-input:focus {
+  background: #f8efcf;
+  border-color: #6d8b3d;
+}
+
+.primary-btn,
+.secondary-btn {
+  width: 100%;
+  border: 3px solid #3f2f1c;
+  padding: 14px 12px;
+  font-family: 'Press Start 2P', monospace;
+  font-size: 0.7rem;
+  cursor: pointer;
+  text-transform: uppercase;
+}
+
+.primary-btn {
+  background: #b4432f;
+  color: #f7edc6;
+}
+
+.secondary-btn {
+  background: #6d8b3d;
+  color: #f7edc6;
+}
+
+.primary-btn:hover,
+.secondary-btn:hover {
+  filter: brightness(0.95);
+}
+
+.primary-btn:active,
+.secondary-btn:active {
+  transform: translateY(2px);
+}
+
+.errorMessage {
+  color: #a11f1f;
+  font-size: 0.65rem;
+  line-height: 1.6;
+  margin-top: 6px;
+}
+
+@media (max-width: 520px) {
+  .lobby-card {
+    padding: 24px 20px;
+  }
+
+  .lobby-header h1 {
+    font-size: 1.1rem;
+  }
+
+  .lobby-header p,
+  .section-text,
+  .divider,
+  .room-input,
+  .primary-btn,
+  .secondary-btn,
+  .errorMessage,
+  .lobby-section h2 {
+    font-size: 0.6rem;
+  }
+}
