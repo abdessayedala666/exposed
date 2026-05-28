@@ -2,6 +2,8 @@ package com.game.exposed.Controllers;
 
 
 import jakarta.servlet.http.HttpSession;
+import jakarta.servlet.http.HttpServletRequest;
+import java.util.Collections;
 import org.springframework.web.bind.annotation.*;
 
 import com.game.exposed.dto.NameDTO;
@@ -12,7 +14,7 @@ import com.game.exposed.Exceptions.MissingSessionDataException;
 public class GuestController {
 
     @PostMapping
-    public String saveGuest(@RequestBody NameDTO request, HttpSession session) {
+    public String saveGuest(@RequestBody NameDTO request, HttpSession session, HttpServletRequest httpRequest) {
         if (request == null || request.getName() == null || request.getName().isBlank()) {
             throw new IllegalArgumentException("Name cannot be null or empty");
         }
@@ -21,7 +23,14 @@ public class GuestController {
             throw new MissingSessionDataException("Session is invalid");
         }
         
-        System.out.println(request.getName());
+        System.out.println("===== guest login =====");
+        System.out.println("name = " + request.getName());
+        System.out.println("sender IP = " + httpRequest.getRemoteAddr());
+        System.out.println("request headers:");
+        Collections.list(httpRequest.getHeaderNames()).forEach(headerName -> 
+            System.out.println("  " + headerName + " = " + httpRequest.getHeader(headerName))
+        );
+        
         session.setAttribute("name", request.getName());
         return "saved " + request.getName();
     }

@@ -46,15 +46,20 @@ public class RoomSocketController {
         this.gameMessagingLayer = gameMessagingLayer;
     }
 
-    @MessageMapping("/api/room/{roomId}/seats")
+    @MessageMapping("/room/{roomId}/seats")
     public void updateSeats(
             @DestinationVariable String roomId,
             @Payload SeatAction payload,
             SimpMessageHeaderAccessor headerAccessor
     ) {
         String currentUser = headerAccessor.getUser() != null ? headerAccessor.getUser().getName() : null;
+        System.out.println("===== seat update received =====");
+        System.out.println("roomId = " + roomId);
+        System.out.println("user = " + (headerAccessor.getUser() != null ? headerAccessor.getUser().getName() : "null"));
+        System.out.println("payload = " + payload);
         try {
             List<String> seats = updateSeatsHandler.handleUpdateSeats(roomId, payload, headerAccessor);
+            System.out.println("updated seats = " + seats);
             messagingTemplate.convertAndSend("/topic/room/" + roomId, seats);
         } catch (RuntimeException ex) {
             System.out.println("Seat update rejected for user " + currentUser + ": " + ex.getMessage());
