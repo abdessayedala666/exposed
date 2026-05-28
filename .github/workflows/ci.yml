@@ -57,7 +57,7 @@ jobs:
         with:
           name: frontend-dist
           path: frontend/dist/
-      -name: nginx image
+
   docker:
     needs: [backend, frontend]
     runs-on: ubuntu-latest
