@@ -34,6 +34,7 @@ jobs:
         name: backend-jar
         path: backend/target/*.jar
   docker:
+    needs: build
     runs-on: ubuntu-latest
     steps:
     - uses : actions/checkout@v4
