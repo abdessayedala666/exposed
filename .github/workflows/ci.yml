@@ -85,7 +85,7 @@ jobs:
       - name: build frontend image 
         run: docker build -t ghcr.io/abdessayedala666/frontend:latest frontend
       - name: build backend image 
-        run: docker build -t ghcr.io/abdessayedala666/bakcend:latest backend
+        run: docker build -t ghcr.io/abdessayedala666/backend:latest backend
       - name: build nginx image 
         run: docker build -t ghcr.io/abdessayedala666/nginx:latest nginx
       - name: Push frontend
