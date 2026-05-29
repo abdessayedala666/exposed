@@ -139,21 +139,21 @@ jobs:
       # SECURITY SCAN (TRIVY)
       # =========================
       - name: Scan backend image
-        uses: aquasecurity/trivy-action@0.20.0
+        uses: aquasecurity/trivy-action@v0.36.0
         with:
           image-ref: ghcr.io/${{ github.repository }}/backend:latest
           format: table
           exit-code: 1
 
       - name: Scan frontend image
-        uses: aquasecurity/trivy-action@0.20.0
+        uses: aquasecurity/trivy-action@v0.36.0
         with:
           image-ref: ghcr.io/${{ github.repository }}/frontend:latest
           format: table
           exit-code: 1
 
       - name: Scan nginx image
-        uses: aquasecurity/trivy-action@0.20.0
+        uses: aquasecurity/trivy-action@v0.36.0
         with:
           image-ref: ghcr.io/${{ github.repository }}/nginx:latest
           format: table
