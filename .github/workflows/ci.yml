@@ -14,105 +14,105 @@ jobs:
 # =========================
 # BACKEND (Spring Boot)
 # =========================
-backend:
-  runs-on: ubuntu-latest
+  backend:
+    runs-on: ubuntu-latest
 
-  steps:
-    - uses: actions/checkout@v4
+    steps:
+      - uses: actions/checkout@v4
 
-    - name: Set up JDK 25
-      uses: actions/setup-java@v4
-      with:
-        java-version: "25"
-        distribution: "temurin"
-        cache: maven
+      - name: Set up JDK 25
+        uses: actions/setup-java@v4
+        with:
+          java-version: "25"
+          distribution: "temurin"
+          cache: maven
 
-    - name: Build + Test
-      working-directory: backend
-      run: mvn clean verify
+      - name: Build + Test
+        working-directory: backend
+        run: mvn clean verify
 
-    # =====================
-    # SONARQUBE (CODE QUALITY)
-    # =====================
-    - name: SonarQube Scan
-      uses: SonarSource/sonarqube-scan-action@v4
-      with:
-        args: >
-          -Dsonar.projectKey=your_project
-          -Dsonar.sources=backend
+      # =====================
+      # SONARQUBE (CODE QUALITY)
+      # =====================
+      - name: SonarQube Scan
+        uses: SonarSource/sonarqube-scan-action@v4
+        with:
+          args: >
+            -Dsonar.projectKey=your_project
+            -Dsonar.sources=backend
 
-    - name: Upload backend artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: backend-jar
-        path: backend/target/*.jar
-frontend:
-  runs-on: ubuntu-latest
+      - name: Upload backend artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-jar
+          path: backend/target/*.jar
+  frontend:
+    runs-on: ubuntu-latest
 
-  steps:
-    - uses: actions/checkout@v4
+    steps:
+      - uses: actions/checkout@v4
 
-    - name: Setup Node 24
-      uses: actions/setup-node@v4
-      with:
-        node-version: "24"
-        cache: "npm"
-        cache-dependency-path: frontend/package-lock.json
+      - name: Setup Node 24
+        uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: "npm"
+          cache-dependency-path: frontend/package-lock.json
 
-    - name: Install dependencies
-      working-directory: frontend
-      run: npm ci
+      - name: Install dependencies
+        working-directory: frontend
+        run: npm ci
 
-    - name: Lint
-      working-directory: frontend
-      run: npm run lint || true
+      - name: Lint
+        working-directory: frontend
+        run: npm run lint || true
 
-    - name: NPM Security Audit
-      working-directory: frontend
-      run: npm audit --audit-level=high
+      - name: NPM Security Audit
+        working-directory: frontend
+        run: npm audit --audit-level=high
 
-    - name: Build Angular
-      working-directory: frontend
-      run: npx ng build --configuration docker-production
+      - name: Build Angular
+        working-directory: frontend
+        run: npx ng build --configuration docker-production
 
-    - name: Upload frontend artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: frontend-dist
-        path: frontend/dist/
-security:
-  needs: [backend, frontend]
-  runs-on: ubuntu-latest
+      - name: Upload frontend artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-dist
+          path: frontend/dist/
+  security:
+    needs: [backend, frontend]
+    runs-on: ubuntu-latest
 
-  steps:
-    - uses: actions/checkout@v4
+    steps:
+      - uses: actions/checkout@v4
 
-    # =====================
-    # Scan backend image
-    # =====================
-    - name: Trivy backend
-      uses: aquasecurity/trivy-action@v0.36.0
-      with:
-        image-ref: ghcr.io/${{ github.repository }}/backend:latest
-        format: table
-        exit-code: 1
+      # =====================
+      # Scan backend image
+      # =====================
+      - name: Trivy backend
+        uses: aquasecurity/trivy-action@v0.36.0
+        with:
+          image-ref: ghcr.io/${{ github.repository }}/backend:latest
+          format: table
+          exit-code: 1
 
-    # =====================
-    # Scan frontend image
-    # =====================
-    - name: Trivy frontend
-      uses: aquasecurity/trivy-action@v0.36.0
-      with:
-        image-ref: ghcr.io/${{ github.repository }}/frontend:latest
-        format: table
-        exit-code: 1
+      # =====================
+      # Scan frontend image
+      # =====================
+      - name: Trivy frontend
+        uses: aquasecurity/trivy-action@v0.36.0
+        with:
+          image-ref: ghcr.io/${{ github.repository }}/frontend:latest
+          format: table
+          exit-code: 1
 
-    # =====================
-    # Scan nginx image
-    # =====================
-    - name: Trivy nginx
-      uses: aquasecurity/trivy-action@v0.36.0
-      with:
-        image-ref: ghcr.io/${{ github.repository }}/nginx:latest
-        format: table
-        exit-code: 1
+      # =====================
+      # Scan nginx image
+      # =====================
+      - name: Trivy nginx
+        uses: aquasecurity/trivy-action@v0.36.0
+        with:
+          image-ref: ghcr.io/${{ github.repository }}/nginx:latest
+          format: table
+          exit-code: 1
