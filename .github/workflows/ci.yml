@@ -58,7 +58,6 @@ jobs:
           name: frontend-dist
           path: frontend/dist/
 
-
   docker:
     needs: [backend, frontend]
     runs-on: ubuntu-latest
@@ -83,11 +82,15 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Push frontend image 
-        run: docker push ghcr.io/${{ github.repository_owner }}/frontend:${{ github.sha }}
-      - name: Push backend image 
-        run: docker push ghcr.io/${{ github.repository_owner }}/backend:${{ github.sha }}
-      - name: Push nginx image 
-        run: docker push ghcr.io/${{ github.repository_owner }}/nginx:${{ github.sha }}
-      - name: Push images
-        run: docker compose push
+      - name: build frontend image 
+        run: docker build -t ghcr.io/abdessayedala666/frontend:latest frontend
+      - name: build backend image 
+        run: docker build -t ghcr.io/abdessayedala666/backend:latest backend
+      - name: build nginx image 
+        run: docker build -t ghcr.io/abdessayedala666/nginx:latest nginx
+      - name: Push frontend
+        run: docker push ghcr.io/abdessayedala666/frontend:latest
+      - name: Push backend
+        run: docker push ghcr.io/abdessayedala666/backend:latest
+      - name: Push nginx
+        run: docker push ghcr.io/abdessayedala666/nginx:latest
