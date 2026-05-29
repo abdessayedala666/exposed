@@ -80,39 +80,82 @@ jobs:
         with:
           name: frontend-dist
           path: frontend/dist/
-  security:
-    needs: [backend, frontend]
-    runs-on: ubuntu-latest
+docker:
+  needs: [backend, frontend]
+  runs-on: ubuntu-latest
 
-    steps:
-      - uses: actions/checkout@v4
+  steps:
+    - uses: actions/checkout@v4
 
-      # =====================
-      # Scan backend image
-      # =====================
-      - name: Trivy backend
-        uses: aquasecurity/trivy-action@v0.36.0
-        with:
-          image-ref: ghcr.io/${{ github.repository }}/backend:latest
-          format: table
-          exit-code: 1
+    # =========================
+    # DOWNLOAD ARTIFACTS
+    # =========================
+    - name: Download backend artifact
+      uses: actions/download-artifact@v4
+      with:
+        name: backend-jar
+        path: backend/target/
 
-      # =====================
-      # Scan frontend image
-      # =====================
-      - name: Trivy frontend
-        uses: aquasecurity/trivy-action@v0.36.0
-        with:
-          image-ref: ghcr.io/${{ github.repository }}/frontend:latest
-          format: table
-          exit-code: 1
+    - name: Download frontend artifact
+      uses: actions/download-artifact@v4
+      with:
+        name: frontend-dist
+        path: frontend/dist/
 
-      # =====================
-      # Scan nginx image
-      # =====================
-      - name: Trivy nginx
-        uses: aquasecurity/trivy-action@v0.36.0
-        with:
-          image-ref: ghcr.io/${{ github.repository }}/nginx:latest
-          format: table
-          exit-code: 1
+    # =========================
+    # LOGIN TO REGISTRY
+    # =========================
+    - name: Login to GHCR
+      uses: docker/login-action@v3
+      with:
+        registry: ghcr.io
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+
+    # =========================
+    # BUILD IMAGES
+    # =========================
+    - name: Build backend image
+      run: docker build -t ghcr.io/${{ github.repository }}/backend:latest backend
+
+    - name: Build frontend image
+      run: docker build -t ghcr.io/${{ github.repository }}/frontend:latest frontend
+
+    - name: Build nginx image
+      run: docker build -t ghcr.io/${{ github.repository }}/nginx:latest nginx
+
+    # =========================
+    # SECURITY SCAN (TRIVY)
+    # =========================
+    - name: Scan backend image
+      uses: aquasecurity/trivy-action@0.20.0
+      with:
+        image-ref: ghcr.io/${{ github.repository }}/backend:latest
+        format: table
+        exit-code: 1
+
+    - name: Scan frontend image
+      uses: aquasecurity/trivy-action@0.20.0
+      with:
+        image-ref: ghcr.io/${{ github.repository }}/frontend:latest
+        format: table
+        exit-code: 1
+
+    - name: Scan nginx image
+      uses: aquasecurity/trivy-action@0.20.0
+      with:
+        image-ref: ghcr.io/${{ github.repository }}/nginx:latest
+        format: table
+        exit-code: 1
+
+    # =========================
+    # PUSH IMAGES (ONLY IF SCAN PASSES)
+    # =========================
+    - name: Push backend image
+      run: docker push ghcr.io/${{ github.repository }}/backend:latest
+
+    - name: Push frontend image
+      run: docker push ghcr.io/${{ github.repository }}/frontend:latest
+
+    - name: Push nginx image
+      run: docker push ghcr.io/${{ github.repository }}/nginx:latest
