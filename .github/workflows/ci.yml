@@ -144,12 +144,15 @@ jobs:
           image-ref: ghcr.io/${{ github.repository }}/backend:latest
           format: table
           exit-code: 1
+          severity: CRITICAL  
 
       - name: Scan frontend image
         uses: aquasecurity/trivy-action@v0.36.0
         with:
           image-ref: ghcr.io/${{ github.repository }}/frontend:latest
           format: table
+          severity: CRITICAL  
+   
           exit-code: 1
 
       - name: Scan nginx image
@@ -157,6 +160,8 @@ jobs:
         with:
           image-ref: ghcr.io/${{ github.repository }}/nginx:latest
           format: table
+          severity: CRITICAL  
+
           exit-code: 1
 
       # =========================
