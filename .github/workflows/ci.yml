@@ -50,7 +50,7 @@ jobs:
         run: npm install 
       - name: Build frontend
         working-directory: frontend
-        run: ng build --configuration docker-production
+        run: npx ng build --configuration docker-production
 
       - name: Upload frontend artifact
         uses: actions/upload-artifact@v4
