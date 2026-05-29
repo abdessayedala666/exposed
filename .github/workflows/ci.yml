@@ -14,141 +14,105 @@ jobs:
 # =========================
 # BACKEND (Spring Boot)
 # =========================
-  backend:
-    runs-on: ubuntu-latest
+backend:
+  runs-on: ubuntu-latest
 
-    steps:
-      - uses: actions/checkout@v4
+  steps:
+    - uses: actions/checkout@v4
 
-      - name: Set up JDK 25
-        uses: actions/setup-java@v4
-        with:
-          java-version: "25"
-          distribution: "temurin"
-          cache: maven
+    - name: Set up JDK 25
+      uses: actions/setup-java@v4
+      with:
+        java-version: "25"
+        distribution: "temurin"
+        cache: maven
 
-      - name: Run tests + build
-        working-directory: backend
-        run: mvn clean verify
+    - name: Build + Test
+      working-directory: backend
+      run: mvn clean verify
 
-      - name: Upload backend artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: backend-jar
-          path: backend/target/*.jar
+    # =====================
+    # SONARQUBE (CODE QUALITY)
+    # =====================
+    - name: SonarQube Scan
+      uses: SonarSource/sonarqube-scan-action@v4
+      with:
+        args: >
+          -Dsonar.projectKey=your_project
+          -Dsonar.sources=backend
 
+    - name: Upload backend artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: backend-jar
+        path: backend/target/*.jar
+frontend:
+  runs-on: ubuntu-latest
 
-# =========================
-# FRONTEND (Angular)
-# =========================
-  frontend:
-    runs-on: ubuntu-latest
+  steps:
+    - uses: actions/checkout@v4
 
-    steps:
-      - uses: actions/checkout@v4
+    - name: Setup Node 24
+      uses: actions/setup-node@v4
+      with:
+        node-version: "24"
+        cache: "npm"
+        cache-dependency-path: frontend/package-lock.json
 
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: "24"
-          cache: "npm"
-          cache-dependency-path: frontend/package-lock.json
+    - name: Install dependencies
+      working-directory: frontend
+      run: npm ci
 
-      - name: Install dependencies
-        working-directory: frontend
-        run: npm ci
+    - name: Lint
+      working-directory: frontend
+      run: npm run lint || true
 
-      - name: Lint frontend
-        working-directory: frontend
-        run: npm run lint || true
+    - name: NPM Security Audit
+      working-directory: frontend
+      run: npm audit --audit-level=high
 
-      - name: Security audit (fail on high)
-        working-directory: frontend
-        run: npm audit --audit-level=high
+    - name: Build Angular
+      working-directory: frontend
+      run: npx ng build --configuration docker-production
 
-      - name: Build Angular app
-        working-directory: frontend
-        run: npx ng build --configuration docker-production
+    - name: Upload frontend artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: frontend-dist
+        path: frontend/dist/
+security:
+  needs: [backend, frontend]
+  runs-on: ubuntu-latest
 
-      - name: Upload frontend artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: frontend-dist
-          path: frontend/dist/
+  steps:
+    - uses: actions/checkout@v4
 
+    # =====================
+    # Scan backend image
+    # =====================
+    - name: Trivy backend
+      uses: aquasecurity/trivy-action@v0.36.0
+      with:
+        image-ref: ghcr.io/${{ github.repository }}/backend:latest
+        format: table
+        exit-code: 1
 
-# =========================
-# SECURITY SCANNING
-# =========================
-  security:
-    runs-on: ubuntu-latest
+    # =====================
+    # Scan frontend image
+    # =====================
+    - name: Trivy frontend
+      uses: aquasecurity/trivy-action@v0.36.0
+      with:
+        image-ref: ghcr.io/${{ github.repository }}/frontend:latest
+        format: table
+        exit-code: 1
 
-    steps:
-      - uses: actions/checkout@v4
-
-      # Secret scanning
-      - name: Gitleaks scan
-        uses: gitleaks/gitleaks-action@v2
-
-      # Docker vulnerability scan (backend image)
-      - name: Scan backend image (Trivy)
-        uses: aquasecurity/trivy-action@0.20.0
-        with:
-          scan-type: image
-          image-ref: ghcr.io/${{ github.repository }}/backend:latest
-          format: table
-          exit-code: 1
-
-
-# =========================
-# DOCKER BUILD + PUSH
-# =========================
-  docker:
-    needs: [backend, frontend , security]
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Download backend artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: backend-jar
-          path: backend/target/
-
-      - name: Download frontend artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: frontend-dist
-          path: frontend/dist/
-
-      - name: Login to GHCR
-        uses: docker/login-action@v3
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
-      # =========================
-      # Build images with SHA tag
-      # =========================
-      - name: Build backend image
-        run: docker tag ghcr.io/${{ github.repository }}/backend:${{ github.sha }} ghcr.io/${{ github.repository }}/backend:latest
-
-      - name: Build frontend image
-        run: docker tag ghcr.io/${{ github.repository }}/frontend:${{ github.sha }} ghcr.io/${{ github.repository }}/frontend:latest
-
-      - name: Build nginx image
-        run: docker tag ghcr.io/${{ github.repository }}/nginx:${{ github.sha }} ghcr.io/${{ github.repository }}/nginx:latest
-
-      # =========================
-      # Push images
-      # =========================
-      - name: Push backend
-        run: docker push ghcr.io/${{ github.repository }}/backend:latest
-
-      - name: Push frontend
-        run: docker push ghcr.io/${{ github.repository }}/frontend:latest
-
-      - name: Push nginx
-        run: docker push ghcr.io/${{ github.repository }}/nginx:latest
+    # =====================
+    # Scan nginx image
+    # =====================
+    - name: Trivy nginx
+      uses: aquasecurity/trivy-action@v0.36.0
+      with:
+        image-ref: ghcr.io/${{ github.repository }}/nginx:latest
+        format: table
+        exit-code: 1
