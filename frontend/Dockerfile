@@ -1,4 +1,4 @@
-FROM nginx:alpine
+nginx:stable-alpine
 
 # Copy built Angular files
 COPY dist/frontend/browser/ /usr/share/nginx/html/
