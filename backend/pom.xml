@@ -22,6 +22,7 @@
         <!-- FIX: Java 25 is extremely risky / unsupported in most Spring ecosystems -->
         <!-- safer: use LTS version -->
         <java.version>21</java.version>
+    	<tomcat.version>11.0.22</tomcat.version>
 
         <sonar.organization>abdessayedala666</sonar.organization>
     </properties>
