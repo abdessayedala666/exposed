@@ -1,31 +1,35 @@
 name: CI
 
-permissions:
-  contents: read
-  packages: write
-
 on:
   push:
     branches: ["main"]
   pull_request:
     branches: ["main"]
 
+permissions:
+  contents: read
+  packages: write
+
 jobs:
+# =========================
+# BACKEND (Spring Boot)
+# =========================
   backend:
     runs-on: ubuntu-latest
+
     steps:
       - uses: actions/checkout@v4
 
       - name: Set up JDK 25
         uses: actions/setup-java@v4
         with:
-          java-version: '25'
-          distribution: 'temurin'
+          java-version: "25"
+          distribution: "temurin"
           cache: maven
 
-      - name: Build with Maven
+      - name: Run tests + build
         working-directory: backend
-        run: mvn -B clean package
+        run: mvn clean verify
 
       - name: Upload backend artifact
         uses: actions/upload-artifact@v4
@@ -34,21 +38,35 @@ jobs:
           path: backend/target/*.jar
 
 
+# =========================
+# FRONTEND (Angular)
+# =========================
   frontend:
     runs-on: ubuntu-latest
+
     steps:
       - uses: actions/checkout@v4
 
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
-  
+          node-version: "24"
+          cache: "npm"
+          cache-dependency-path: frontend/package-lock.json
 
-      - name: Install dependencies 
+      - name: Install dependencies
         working-directory: frontend
-        run: npm install 
-      - name: Build frontend
+        run: npm ci
+
+      - name: Lint frontend
+        working-directory: frontend
+        run: npm run lint || true
+
+      - name: Security audit (fail on high)
+        working-directory: frontend
+        run: npm audit --audit-level=high
+
+      - name: Build Angular app
         working-directory: frontend
         run: npx ng build --configuration docker-production
 
@@ -58,19 +76,48 @@ jobs:
           name: frontend-dist
           path: frontend/dist/
 
-  docker:
-    needs: [backend, frontend]
+
+# =========================
+# SECURITY SCANNING
+# =========================
+  security:
     runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@v4
 
-      - uses: actions/download-artifact@v4
+      # Secret scanning
+      - name: Gitleaks scan
+        uses: gitleaks/gitleaks-action@v2
+
+      # Docker vulnerability scan (backend image)
+      - name: Scan backend image (Trivy)
+        uses: aquasecurity/trivy-action@0.20.0
+        with:
+          scan-type: image
+          image-ref: ghcr.io/${{ github.repository }}/backend:latest
+          format: table
+          exit-code: 1
+
+
+# =========================
+# DOCKER BUILD + PUSH
+# =========================
+  docker:
+    needs: [backend, frontend , security]
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download backend artifact
+        uses: actions/download-artifact@v4
         with:
           name: backend-jar
           path: backend/target/
 
-      - uses: actions/download-artifact@v4
+      - name: Download frontend artifact
+        uses: actions/download-artifact@v4
         with:
           name: frontend-dist
           path: frontend/dist/
@@ -82,15 +129,26 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: build frontend image 
-        run: docker build -t ghcr.io/abdessayedala666/frontend:latest frontend
-      - name: build backend image 
-        run: docker build -t ghcr.io/abdessayedala666/backend:latest backend
-      - name: build nginx image 
-        run: docker build -t ghcr.io/abdessayedala666/nginx:latest nginx
-      - name: Push frontend
-        run: docker push ghcr.io/abdessayedala666/frontend:latest
+      # =========================
+      # Build images with SHA tag
+      # =========================
+      - name: Build backend image
+        run: docker tag ghcr.io/${{ github.repository }}/backend:${{ github.sha }} ghcr.io/${{ github.repository }}/backend:latest
+
+      - name: Build frontend image
+        run: docker tag ghcr.io/${{ github.repository }}/frontend:${{ github.sha }} ghcr.io/${{ github.repository }}/frontend:latest
+
+      - name: Build nginx image
+        run: docker tag ghcr.io/${{ github.repository }}/nginx:${{ github.sha }} ghcr.io/${{ github.repository }}/nginx:latest
+
+      # =========================
+      # Push images
+      # =========================
       - name: Push backend
-        run: docker push ghcr.io/abdessayedala666/backend:latest
+        run: docker push ghcr.io/${{ github.repository }}/backend:latest
+
+      - name: Push frontend
+        run: docker push ghcr.io/${{ github.repository }}/frontend:latest
+
       - name: Push nginx
-        run: docker push ghcr.io/abdessayedala666/nginx:latest
+        run: docker push ghcr.io/${{ github.repository }}/nginx:latest
