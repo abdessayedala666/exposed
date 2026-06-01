@@ -13,7 +13,8 @@ jobs:
         uses: tailscale/github-action@v2
         with:
           authkey: ${{ secrets.TAILSCALE_AUTHKEY }}
-
+      - name: Debug repo structure
+        run: ls -R
       # 2. Copy docker-compose.yml to Windows server
       - name: Copy docker-compose.yml
         uses: appleboy/scp-action@v0.1.7
