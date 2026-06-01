@@ -8,14 +8,21 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 1. Connect to Tailscale network
+      # 1. Load repo into GitHub runner (IMPORTANT)
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      # 2. Debug repo structure (now it will show files)
+      - name: Debug repo structure
+        run: ls -R
+
+      # 3. Connect to Tailscale network
       - name: Connect to Tailscale
         uses: tailscale/github-action@v2
         with:
           authkey: ${{ secrets.TAILSCALE_AUTHKEY }}
-      - name: Debug repo structure
-        run: ls -R
-      # 2. Copy docker-compose.yml to Windows server
+
+      # 4. Copy docker-compose.yml to server
       - name: Copy docker-compose.yml
         uses: appleboy/scp-action@v0.1.7
         with:
@@ -25,7 +32,7 @@ jobs:
           source: "docker-compose.yaml"
           target: "C:/deploy"
 
-      # 3. Deploy containers + start ngrok
+      # 5. Deploy + start ngrok
       - name: SSH deploy + ngrok
         uses: appleboy/ssh-action@v1.0.3
         with:
