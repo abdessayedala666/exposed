@@ -18,7 +18,7 @@ jobs:
         with:
           authkey: ${{ secrets.TAILSCALE_AUTHKEY }}
 
-      # 3. Start Docker Desktop
+      # 3. Start Docker Desktop (Windows)
       - name: Start Docker Desktop
         uses: appleboy/ssh-action@v1.0.3
         with:
@@ -34,7 +34,8 @@ jobs:
           host: ${{ secrets.SERVER_HOST }}
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SERVER_SSH_KEY }}
-          script: Start-Sleep -Seconds 20
+          script: powershell -Command "Start-Sleep -Seconds 20"
+
       # 5. Docker check
       - name: Docker info
         uses: appleboy/ssh-action@v1.0.3
@@ -71,8 +72,8 @@ jobs:
           key: ${{ secrets.SERVER_SSH_KEY }}
           script: docker ps
 
-      # 9. Ngrok auth
-      - name: Ngrok auth
+      # 9. Configure ngrok
+      - name: Configure ngrok
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.SERVER_HOST }}
@@ -87,9 +88,18 @@ jobs:
           host: ${{ secrets.SERVER_HOST }}
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SERVER_SSH_KEY }}
-          script: start /B ngrok http 80
+          script: powershell -Command "Start-Process ngrok -ArgumentList 'http 80'"
 
-      # 11. Get URL
+      # 11. Wait ngrok
+      - name: Wait ngrok
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SERVER_SSH_KEY }}
+          script: powershell -Command "Start-Sleep -Seconds 5"
+
+      # 12. Get public URL
       - name: Get ngrok URL
         uses: appleboy/ssh-action@v1.0.3
         with:
