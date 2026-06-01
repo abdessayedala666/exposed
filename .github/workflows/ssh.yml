@@ -45,6 +45,13 @@ jobs:
           key: ${{ secrets.SERVER_SSH_KEY }}
           script: docker info
 
+      - name: Login to GHCR (on Windows server)
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SERVER_SSH_KEY }}
+          script: echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin
       # 6. Pull images
       - name: Pull images
         uses: appleboy/ssh-action@v1.0.3
