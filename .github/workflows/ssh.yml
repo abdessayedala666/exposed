@@ -1,4 +1,4 @@
-name: Full Deploy + Ngrok CD
+name: Deploy + Docker Safe Start + Ngrok
 
 on:
   workflow_dispatch:
@@ -12,13 +12,13 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v4
 
-      # 2. Connect to Tailscale network
+      # 2. Connect to Tailscale
       - name: Connect to Tailscale
         uses: tailscale/github-action@v2
         with:
           authkey: ${{ secrets.TAILSCALE_AUTHKEY }}
 
-      # 3. Copy docker-compose to server
+      # 3. Copy docker-compose to Windows server
       - name: Copy compose file
         uses: appleboy/scp-action@v0.1.7
         with:
@@ -28,18 +28,32 @@ jobs:
           source: "docker-compose.yaml"
           target: "C:/deploy"
 
-      # 4. Full remote deployment + ngrok
-      - name: Deploy on server + start ngrok
+      # 4. FULL DEPLOY STEP (Docker safe startup + wait + verify)
+      - name: Deploy safely on Windows server
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.SERVER_HOST }}
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SERVER_SSH_KEY }}
           script: |
+            echo "🚀 Starting Docker Desktop..."
+
+            powershell -Command "Start-Process 'C:\Program Files\Docker\Docker\Docker Desktop.exe'"
+
+            echo "⏳ Waiting for Docker engine..."
+            timeout /t 15 > nul
+
+            echo "📦 Checking Docker status..."
+            docker info
+
+            echo "📁 Moving to deploy folder..."
             cd C:/deploy
 
             echo "🚀 Starting containers..."
             docker compose up -d
+
+            echo "📦 Listing running containers..."
+            docker ps
 
             echo "🔐 Configuring ngrok..."
             ngrok config add-authtoken ${{ secrets.NGROK_TOKEN }}
