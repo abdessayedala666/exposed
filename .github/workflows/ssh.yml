@@ -8,6 +8,10 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Connect to Tailscale
+        uses: tailscale/github-action@v2
+        with:
+          authkey: ${{ secrets.TAILSCALE_AUTHKEY }}
       - name: SSH into server and list directory
         uses: appleboy/ssh-action@v1.0.3
         with:
@@ -16,3 +20,4 @@ jobs:
           key: ${{ secrets.SERVER_SSH_KEY }}
           script: |
             dir
+            
