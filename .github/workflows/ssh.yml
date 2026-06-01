@@ -18,50 +18,83 @@ jobs:
         with:
           authkey: ${{ secrets.TAILSCALE_AUTHKEY }}
 
-      # 3. Copy docker-compose to Windows server
-      - name: Copy compose file
-        uses: appleboy/scp-action@v0.1.7
-        with:
-          host: ${{ secrets.SERVER_HOST }}
-          username: ${{ secrets.SERVER_USER }}
-          key: ${{ secrets.SERVER_SSH_KEY }}
-          source: "docker-compose.yaml"
-          target: "C:/deploy"
-
-      # 4. FULL DEPLOY STEP (Docker safe startup + wait + verify)
-      - name: Deploy safely on Windows server
+      # 3. Start Docker Desktop
+      - name: Start Docker Desktop
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.SERVER_HOST }}
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SERVER_SSH_KEY }}
-          script: |
-            echo "🚀 Starting Docker Desktop..."
+          script: echo Starting Docker Desktop... && powershell -Command "Start-Process 'C:\Program Files\Docker\Docker\Docker Desktop.exe'"
 
-            powershell -Command "Start-Process 'C:\Program Files\Docker\Docker\Docker Desktop.exe'"
+      # 4. Wait for Docker
+      - name: Wait for Docker
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SERVER_SSH_KEY }}
+          script: echo Waiting for Docker engine... && timeout /t 20 > nul
 
-            echo "⏳ Waiting for Docker engine..."
-            timeout /t 15 > nul
+      # 5. Check Docker
+      - name: Check Docker
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SERVER_SSH_KEY }}
+          script: echo Checking Docker... && docker info
 
-            echo "📦 Checking Docker status..."
-            docker info
+      # 6. Pull images
+      - name: Pull images
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SERVER_SSH_KEY }}
+          script: echo Pulling images... && docker compose -f C:/deploy/docker-compose.yaml pull
 
-            echo "📁 Moving to deploy folder..."
-            cd C:/deploy
+      # 7. Start containers
+      - name: Start containers
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SERVER_SSH_KEY }}
+          script: echo Starting containers... && docker compose -f C:/deploy/docker-compose.yaml up -d --remove-orphans
 
-            echo "🚀 Starting containers..."
-            docker compose up -d
+      # 8. List containers
+      - name: List containers
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SERVER_SSH_KEY }}
+          script: echo Listing containers... && docker ps
 
-            echo "📦 Listing running containers..."
-            docker ps
+      # 9. Configure ngrok
+      - name: Configure ngrok
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SERVER_SSH_KEY }}
+          script: echo Configuring ngrok... && ngrok config add-authtoken ${{ secrets.NGROK_TOKEN }}
 
-            echo "🔐 Configuring ngrok..."
-            ngrok config add-authtoken ${{ secrets.NGROK_TOKEN }}
+      # 10. Start ngrok
+      - name: Start ngrok
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SERVER_SSH_KEY }}
+          script: echo Starting ngrok... && start /B ngrok http 80
 
-            echo "🌐 Starting ngrok..."
-            start /B ngrok http 80
-
-            timeout /t 5 > nul
-
-            echo "🔍 PUBLIC URL:"
-            powershell -Command "(Invoke-RestMethod http://127.0.0.1:4040/api/tunnels).tunnels[0].public_url"
+      # 11. Get public URL
+      - name: Get ngrok URL
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SERVER_SSH_KEY }}
+          script: echo Fetching public URL... && powershell -Command "(Invoke-RestMethod http://127.0.0.1:4040/api/tunnels).tunnels[0].public_url"
