@@ -1,4 +1,4 @@
-name: Deploy + Expose via Ngrok
+name: Full Deploy + Ngrok CD
 
 on:
   workflow_dispatch:
@@ -8,27 +8,18 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 1. Load repo into GitHub runner (IMPORTANT)
+      # 1. Load repo
       - name: Checkout repo
         uses: actions/checkout@v4
 
-      # 2. Debug repo structure (now it will show files)
-
-      # 3. Connect to Tailscale network
+      # 2. Connect to Tailscale network
       - name: Connect to Tailscale
         uses: tailscale/github-action@v2
         with:
           authkey: ${{ secrets.TAILSCALE_AUTHKEY }}
-      - name: Prepare folder on server
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: ${{ secrets.SERVER_HOST }}
-          username: ${{ secrets.SERVER_USER }}
-          key: ${{ secrets.SERVER_SSH_KEY }}
-          script: |
-            mkdir C:\deploy
-      # 4. Copy docker-compose.yml to server
-      - name: Copy docker-compose.yml
+
+      # 3. Copy docker-compose to server
+      - name: Copy compose file
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.SERVER_HOST }}
@@ -37,8 +28,8 @@ jobs:
           source: "docker-compose.yaml"
           target: "C:/deploy"
 
-      # 5. Deploy + start ngrok
-      - name: SSH deploy + ngrok
+      # 4. Full remote deployment + ngrok
+      - name: Deploy on server + start ngrok
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.SERVER_HOST }}
@@ -50,10 +41,13 @@ jobs:
             echo "🚀 Starting containers..."
             docker compose up -d
 
+            echo "🔐 Configuring ngrok..."
+            ngrok config add-authtoken ${{ secrets.NGROK_TOKEN }}
+
             echo "🌐 Starting ngrok..."
             start /B ngrok http 80
 
             timeout /t 5 > nul
 
-            echo "🔍 ngrok URL:"
-            curl -s http://127.0.0.1:4040/api/tunnels
+            echo "🔍 PUBLIC URL:"
+            powershell -Command "(Invoke-RestMethod http://127.0.0.1:4040/api/tunnels).tunnels[0].public_url"
