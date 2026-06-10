@@ -8,12 +8,12 @@ import com.game.exposed.game.Components.Player;
 public class Room {
 
     private final String id;
-    private final String roomOwner;
+    private final String owner;
     private final Map<Integer, Player> seats = new HashMap<>();
 
-    public Room(String id, String roomOwner) {
+    public Room(String id, String owner) {
         this.id = id;
-        this.roomOwner = roomOwner;
+        this.owner = owner;
 
         // initialize seat keys with empty assignments
         seats.put(0, null);
@@ -26,8 +26,8 @@ public class Room {
         return id;
     }
 
-    public String getRoomOwner() {
-        return roomOwner;
+    public String getOwner() {
+        return owner;
     }
 
     public Map<Integer, Player> getSeats() {

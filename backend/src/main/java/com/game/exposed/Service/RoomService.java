@@ -2,11 +2,13 @@ package com.game.exposed.Service;
 
 import org.springframework.stereotype.Service;
 
-import com.game.exposed.dto.Room;
+import com.game.exposed.models.Room;
+import com.game.exposed.models.RoomSeat;
 import com.game.exposed.Exceptions.ResourceNotFoundException;
+import com.game.exposed.Repository.RoomRepository;
+import com.game.exposed.Repository.RoomseatRepository;
 import com.game.exposed.Exceptions.InvalidOperationException;
 import com.game.exposed.game.Components.Player;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -15,6 +17,12 @@ import java.util.concurrent.ConcurrentHashMap;
 
 @Service
 public class RoomService {
+    private final RoomRepository roomRepository;
+    private final RoomseatRepository roomseatRepository;
+    public RoomService(RoomRepository roomRepository , RoomseatRepository roomseatRepository) {
+        this.roomRepository = roomRepository;
+        this.roomseatRepository = roomseatRepository;
+    }
 
     private final Map<String, Room> rooms = new ConcurrentHashMap<>();
     
@@ -27,8 +35,13 @@ public class RoomService {
         }
         
         String roomId = generateUniqueRoomId();
-        Room room = new Room(roomId, name);
-        rooms.put(roomId, room);
+        String owner = name + ":" + sessionId;
+        Room room = new Room(roomId, owner);
+        room = roomRepository.save(room);
+        for ( int i = 0 ; i < 4 ; i++){
+            RoomSeat seat = new RoomSeat(room , i);
+            roomseatRepository.save(seat);
+        }
         return roomId;
     }
 
@@ -37,16 +50,18 @@ public class RoomService {
             throw new IllegalArgumentException("Room ID cannot be null or empty");
         }
         
-        Room room = rooms.get(roomId);
+        Room room = roomRepository.findByRoomId(roomId)
+                .orElseThrow(() -> new ResourceNotFoundException("Room not found: " + roomId));
         if (room == null) {
             throw new ResourceNotFoundException("Room not found: " + roomId);
         }
         
-        String owner = room.getRoomOwner();
+        String owner = room.getOwner();
         if (owner == null) {
             throw new ResourceNotFoundException("Room owner not found for room: " + roomId);
         }
-        return owner;
+        String ownerName = owner.split(":")[0];
+        return ownerName;
     }
     
     public Map<String, Room> getRooms() {
@@ -67,12 +82,13 @@ public class RoomService {
             throw new IllegalArgumentException("Invalid seat index: " + index);
         }
         
-        Room room = rooms.get(roomId);
+        Room room = roomRepository.findByRoomId(roomId).orElseThrow(() -> new ResourceNotFoundException("Room not found: " + roomId));
+
+
         if (room == null) {
             throw new ResourceNotFoundException("Room not found: " + roomId);
         }
-        
-        Map<Integer, Player> seats = room.getSeats();
+        List<RoomSeat> seats = room.getSeats();
         if (seats == null) {
             throw new InvalidOperationException("Seats not initialized for room: " + roomId);
         }
@@ -91,7 +107,7 @@ public class RoomService {
             }
         }
         seats.put(index, new Player(sessionId, name, index));
-        System.out.println(room.getRoomOwner());
+        System.out.println(room.getOwner());
     }
 
     public synchronized void leave(String roomId, String sessionId) {

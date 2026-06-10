@@ -61,7 +61,7 @@ public class LaunchGameHandler {
             throw new ResourceNotFoundException("Room not found: " + roomId);
         }
 
-        String roomOwner = room.getRoomOwner();
+        String roomOwner = room.getOwner();
         if (roomOwner == null) {
             throw new InvalidOperationException("Room owner is not set for room: " + roomId);
         }

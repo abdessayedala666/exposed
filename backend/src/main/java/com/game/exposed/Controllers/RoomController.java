@@ -36,7 +36,6 @@ public class RoomController {
         
         String sessionId = session.getId();
         String name = (String) session.getAttribute("name");
-        
         if (sessionId == null || sessionId.isBlank()) {
             throw new MissingSessionDataException("Session ID is missing");
         }

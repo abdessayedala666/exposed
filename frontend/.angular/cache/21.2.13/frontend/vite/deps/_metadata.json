@@ -1,67 +1,67 @@
 {
-  "hash": "ba202a3e",
+  "hash": "a868ac40",
   "configHash": "8a3d431e",
-  "lockfileHash": "a42d953f",
-  "browserHash": "78ce123c",
+  "lockfileHash": "a629d4ea",
+  "browserHash": "6ef36997",
   "optimized": {
     "@angular/common": {
       "src": "../../../../../../node_modules/@angular/common/fesm2022/common.mjs",
       "file": "@angular_common.js",
-      "fileHash": "193fe708",
+      "fileHash": "d6bfa2f0",
       "needsInterop": false
     },
     "@angular/common/http": {
       "src": "../../../../../../node_modules/@angular/common/fesm2022/http.mjs",
       "file": "@angular_common_http.js",
-      "fileHash": "4831adec",
+      "fileHash": "3ba12441",
       "needsInterop": false
     },
     "@angular/core": {
       "src": "../../../../../../node_modules/@angular/core/fesm2022/core.mjs",
       "file": "@angular_core.js",
-      "fileHash": "a28c44c6",
+      "fileHash": "1243dabf",
       "needsInterop": false
     },
     "@angular/forms": {
       "src": "../../../../../../node_modules/@angular/forms/fesm2022/forms.mjs",
       "file": "@angular_forms.js",
-      "fileHash": "2592541f",
+      "fileHash": "c97e5e03",
       "needsInterop": false
     },
     "@angular/forms/signals": {
       "src": "../../../../../../node_modules/@angular/forms/fesm2022/signals.mjs",
       "file": "@angular_forms_signals.js",
-      "fileHash": "cddaa000",
+      "fileHash": "cda82edc",
       "needsInterop": false
     },
     "@angular/platform-browser": {
       "src": "../../../../../../node_modules/@angular/platform-browser/fesm2022/platform-browser.mjs",
       "file": "@angular_platform-browser.js",
-      "fileHash": "c76374d0",
+      "fileHash": "afac1149",
       "needsInterop": false
     },
     "@angular/router": {
       "src": "../../../../../../node_modules/@angular/router/fesm2022/router.mjs",
       "file": "@angular_router.js",
-      "fileHash": "9718453b",
+      "fileHash": "c9e8e1df",
       "needsInterop": false
     },
     "@stomp/stompjs": {
       "src": "../../../../../../node_modules/@stomp/stompjs/bundles/stomp.umd.js",
       "file": "@stomp_stompjs.js",
-      "fileHash": "838d5307",
+      "fileHash": "c496b010",
       "needsInterop": true
     }
   },
   "chunks": {
+    "chunk-B7B2PYQ6": {
+      "file": "chunk-B7B2PYQ6.js"
+    },
     "chunk-EL43VPVN": {
       "file": "chunk-EL43VPVN.js"
     },
     "chunk-5UKE2Q4V": {
       "file": "chunk-5UKE2Q4V.js"
-    },
-    "chunk-B7B2PYQ6": {
-      "file": "chunk-B7B2PYQ6.js"
     },
     "chunk-STE5QWS2": {
       "file": "chunk-STE5QWS2.js"

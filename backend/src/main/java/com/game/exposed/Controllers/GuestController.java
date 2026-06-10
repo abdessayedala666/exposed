@@ -23,13 +23,7 @@ public class GuestController {
             throw new MissingSessionDataException("Session is invalid");
         }
         
-        System.out.println("===== guest login =====");
-        System.out.println("name = " + request.getName());
-        System.out.println("sender IP = " + httpRequest.getRemoteAddr());
-        System.out.println("request headers:");
-        Collections.list(httpRequest.getHeaderNames()).forEach(headerName -> 
-            System.out.println("  " + headerName + " = " + httpRequest.getHeader(headerName))
-        );
+        
         
         session.setAttribute("name", request.getName());
         return "saved " + request.getName();
