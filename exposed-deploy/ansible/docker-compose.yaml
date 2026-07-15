@@ -1,0 +1,34 @@
+version: "3.9"
+
+services:
+  nginx:
+    build:
+      context: ./nginx
+    image: ghcr.io/abdessayedala666/nginx:latest
+    container_name: gateway-nginx
+    ports:
+      - "80:80"
+    depends_on:
+      - frontend
+      - backend
+    networks:
+      - app-network
+
+  frontend:
+    build:
+      context: ./frontend
+    image: ghcr.io/abdessayedala666/frontend:latest
+    container_name: frontend
+    networks:
+      - app-network
+
+  backend:
+    build:
+      context: ./backend
+    image: ghcr.io/abdessayedala666/backend:latest
+    container_name: backend
+    networks:
+      - app-network
+
+networks:
+  app-network:

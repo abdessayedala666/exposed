@@ -1,0 +1,66 @@
+---
+- name: Deploy Docker application
+  hosts: tag_terraform
+  remote_user: ubuntu
+  become: true
+  gather_facts: false
+
+  vars_files:
+    - secrets.yml
+
+  tasks:
+    - name: Install Docker
+      ansible.builtin.apt:
+        name:
+          - docker.io
+          - docker-compose-v2
+        state: present
+        update_cache: true
+
+    - name: Ensure Docker service is running
+      ansible.builtin.service:
+        name: docker
+        state: started
+        enabled: true
+
+    - name: Create application directory
+      ansible.builtin.file:
+        path: /opt/app
+        state: directory
+        owner: root
+        group: root
+        mode: "0755"
+
+    - name: Copy Docker Compose file
+      ansible.builtin.copy:
+        src: docker-compose.yaml
+        dest: /opt/app/docker-compose.yaml
+        owner: root
+        group: root
+        mode: "0644"
+
+    - name: Login to GitHub Container Registry
+      ansible.builtin.shell: |
+        echo "{{ ghcr_token }}" | docker login ghcr.io \
+          -u "{{ ghcr_username }}" \
+          --password-stdin
+
+
+    - name: Pull latest Docker images
+      ansible.builtin.shell: docker compose pull
+      args:
+        chdir: /opt/app
+
+    - name: Start application
+      ansible.builtin.shell: docker compose up -d
+      args:
+        chdir: /opt/app
+
+    - name: Show running containers
+      ansible.builtin.command: docker ps
+      register: docker_ps
+      changed_when: false
+
+    - name: Display containers
+      ansible.builtin.debug:
+        var: docker_ps.stdout_lines
