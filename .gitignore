@@ -1,0 +1,26 @@
+# Terraform
+**/.terraform/
+**/*.tfstate
+**/*.tfstate.*
+**/crash.log
+**/crash.*.log
+
+# Terraform variables (if they contain secrets)
+**/*.tfvars
+**/*.tfvars.json
+
+# Python virtual environments (Ansible)
+**/.venv/
+**/venv/
+**/env/
+
+# Python cache
+**/__pycache__/
+**/*.py[cod]
+
+# Ansible
+**/*.retry
+
+# OS files
+.DS_Store
+Thumbs.db
