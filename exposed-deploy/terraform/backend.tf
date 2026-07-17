@@ -1,6 +1,6 @@
 terraform {
   backend "s3" {
-    bucket = "terraform-state-901099688939-eu-west-3-an"
+    bucket = "ansible-bucket-2026"
     key    = "terraform.tfstate"
     region = "eu-west-3"
   }
