@@ -23,6 +23,13 @@ resource "aws_security_group" "terraform_sg" {
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"] 
   }
+  ingress {
+    description = "HTTPS"
+    from_port   = 443
+    to_port     = 443
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
 }
 resource "tls_private_key" "ansible" {
   algorithm = "RSA"
