@@ -31,6 +31,14 @@
         group: root
         mode: "0755"
 
+    - name: Create certificate directory
+      ansible.builtin.file:
+        path: /opt/app/certs
+        state: directory
+        owner: root
+        group: root
+        mode: "0700"
+
     - name: Copy Docker Compose file
       ansible.builtin.copy:
         src: docker-compose.yaml
@@ -39,12 +47,27 @@
         group: root
         mode: "0644"
 
+    - name: Copy TLS certificate
+      ansible.builtin.copy:
+        src: cert/server.crt
+        dest: /opt/app/certs/server.crt
+        owner: root
+        group: root
+        mode: "0644"
+
+    - name: Copy TLS private key
+      ansible.builtin.copy:
+        src: cert/server.key
+        dest: /opt/app/certs/server.key
+        owner: root
+        group: root
+        mode: "0600"
+
     - name: Login to GitHub Container Registry
       ansible.builtin.shell: |
         echo "{{ ghcr_token }}" | docker login ghcr.io \
           -u "{{ ghcr_username }}" \
           --password-stdin
-
 
     - name: Pull latest Docker images
       ansible.builtin.shell: docker compose pull
